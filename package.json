@@ -1,0 +1,30 @@
+{
+  "name": "ExtJsDependencies",
+  "version": "0.1.0",
+  "description": "Lists and resolves your ExtJs app's dependencies.",
+  "main": "qwaya-mapper.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cpak/extjs-dependencies"
+  },
+  "keywords": [
+    "extjs",
+    "dependencies"
+  ],
+  "author": "christoferpak@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cpak/extjs-dependencies/issues"
+  },
+  "dependencies": {
+    "array-extended": "latest",
+    "trim": "0.0.1",
+    "esprima": "~1.0.4"
+  }
+}
