@@ -37,6 +37,12 @@ And for sanity and simplicity, why not just stick to this pattern
 
 **Note:** Running it against the ExtJs source does currently not work. This is because the dependency order in the ExtJs library relies on tags/annotations (e.g. `@tag`) other than the ones used in most ExtJs projects (e.g. `requires: […]`, `@require`). One solution is to use this module on your own project JS, and then include a suitable minified version of `ext-all.js`, either self-served or via a CDN. This is not optimal but also not a prioritized problem to solve.
 
+## Intall
+
+	$ git clone git@github.com:cpak/extjs-dependencies.git
+	$ cd extjs-dependencies
+	$ npm install
+
 ## Example
 
 	var extjsDependencies = require('./extjs-dependencies')({
