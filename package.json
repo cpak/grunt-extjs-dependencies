@@ -2,12 +2,9 @@
   "name": "ExtJsDependencies",
   "version": "0.1.0",
   "description": "Lists and resolves your ExtJs app's dependencies.",
-  "main": "qwaya-mapper.js",
+  "main": "lib/classmapper.js",
   "directories": {
     "test": "test"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -25,6 +22,10 @@
   "dependencies": {
     "array-extended": "latest",
     "trim": "0.0.1",
-    "esprima": "~1.0.4"
+    "falafel": "~0.3.1",
+    "minimatch": "~0.2.12",
+    "node-fs": "~0.1.7",
+    "rimraf": "~2.2.2",
+    "concat-stream": "~1.0.1"
   }
 }
