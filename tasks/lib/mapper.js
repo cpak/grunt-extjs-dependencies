@@ -1,21 +1,26 @@
 
 'use strict';
 
-exports.init = function (grunt, opts) {
+exports.init = function (grunt, opts, cb) {
     var options,
     
         fs = require('fs'),
         nfs = require('node-fs'),
         path = require('path'),
-        rimraf = require('rimraf'),
+        Promise = require('promise'),
+        tmp = require('tmp'),
+        tmpdirp = Promise.denodeify(tmp.dir),
     
         parser,
         graph = require('./graph').init(grunt),
 
         fileCounter = 0,
 
-        exports = {};
+        exports = {},
 
+        initPromise;
+
+    tmp.setGracefulCleanup();
 
     function readOptions(opts) {
         var options = opts || {},
@@ -36,14 +41,6 @@ exports.init = function (grunt, opts) {
         };
     }
     
-    function createTempDir(dirPath) {
-        if (!fs.existsSync(dirPath)) {
-            createDir(dirPath);
-        } else {
-            rimraf.sync(path.join(dirPath, '*'));
-        }
-    }
-
     function createDir(dirPath) {
         if (!fs.existsSync(dirPath)) {
             nfs.mkdirSync(dirPath, '0777', true);
@@ -105,14 +102,6 @@ exports.init = function (grunt, opts) {
         fs.writeFileSync(target, content);
     }
 
-
-
-    options = readOptions(opts);
-    parser = require('./parser.js').init(grunt, options);
-    createTempDir(options.tempDir);
-
-
-
     exports.addDir = function (dirs, parse) {
         if (!Array.isArray(dirs)) {
             dirs = [{ path: dirs, parse: parse !== false }];
@@ -139,5 +128,27 @@ exports.init = function (grunt, opts) {
 
     exports.resolveDependencies = graph.getDependencies;
 
-    return exports;
+
+
+    options = readOptions(opts);
+    parser = require('./parser.js').init(grunt, options);
+
+    tmpdirp({
+        mode: '0777',
+        prefix: 'extjs_dependencies_',
+        unsafeCleanup: true
+    });
+
+    initPromise = tmpdirp(options.tempDir).then(function (path) {
+        options.tempDir = path;
+        return exports;
+    }, function (reason) {
+        grunt.fail.warn(reason);
+    });
+
+    if (typeof cb === 'function') {
+        initPromise.then(cb);
+    }
+
+    return initPromise;
 };

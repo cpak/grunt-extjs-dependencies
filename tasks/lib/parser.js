@@ -58,11 +58,12 @@ exports.init = function (grunt, opts) {
         _currentDirPath = path.dirname(filePath);
 
         if (shouldParseFile(filePath)) {
-            grunt.verbose.writeln('[ExtClassParser] parse ' + baseName);
+            grunt.verbose.write('Parse ' + baseName + '... ');
             
             classData = getClassData(src);
 
             if (classData.classNames.length) {
+                grunt.verbose.ok('Done, defined class names: ' + classData.classNames.join(', '));
                 cls = new ExtClass({
                     names: classData.classNames,
                     parentName: classData.parentName,
@@ -71,6 +72,7 @@ exports.init = function (grunt, opts) {
                     path: filePath
                 });
             } else if (classData.dependencies && classData.dependencies.length) {
+                grunt.verbose.ok('Done, no defined class name. Adding as ' + baseName);
                 cls = new ExtClass({
                     names: [baseName],
                     parentName: classData.parentName,
@@ -80,7 +82,7 @@ exports.init = function (grunt, opts) {
                 });
             }
         } else {
-            grunt.verbose.writeln('[ExtClassParser] skip parse ' + baseName);
+            grunt.verbose.writeln('Skip parse ' + baseName);
             cls = new ExtClass({
                 names: [baseName],
                 dependencies: [],
