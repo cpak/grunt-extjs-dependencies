@@ -1,31 +1,51 @@
 {
-  "name": "ExtJsDependencies",
+  "name": "grunt-extjs-dependencies",
+  "description": "Uses falafel to figure out in what order to load your ExtJs app files.",
   "version": "0.1.0",
-  "description": "Lists and resolves your ExtJs app's dependencies.",
-  "main": "lib/classmapper.js",
-  "directories": {
-    "test": "test"
+  "homepage": "https://github.com/cpak/grunt-extjs-dependencies",
+  "author": {
+    "email": "christoferpak@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cpak/extjs-dependencies"
+    "url": "git://github.com/cpak/grunt-extjs-dependencies.git"
   },
-  "keywords": [
-    "extjs",
-    "dependencies"
-  ],
-  "author": "christoferpak@gmail.com",
-  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cpak/extjs-dependencies/issues"
+    "url": "https://github.com/cpak/grunt-extjs-dependencies/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/cpak/grunt-extjs-dependencies/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "Gruntfile.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
   },
   "dependencies": {
     "array-extended": "latest",
-    "trim": "0.0.1",
+    "concat-stream": "~1.0.1",
     "falafel": "~0.3.1",
     "minimatch": "~0.2.12",
     "node-fs": "~0.1.7",
     "rimraf": "~2.2.2",
-    "concat-stream": "~1.0.1"
-  }
+    "trim": "0.0.1",
+    "promise": "~3.2.0"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt": "~0.4.1"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.1"
+  },
+  "keywords": [
+    "gruntplugin"
+  ]
 }
