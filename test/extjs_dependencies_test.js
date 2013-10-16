@@ -27,26 +27,31 @@ exports.extjs_dependencies = {
     test.expect(1);
 
     var actual = grunt.file.expand('tmp/**/*.js').length,
-        expected = 12;
+        expected = 14;
     
-    test.equal(actual, expected, 'should have generated 12 output files.');
+    test.equal(actual, expected, 'should have generated 14 output files.');
 
     test.done();
   },
 
   dependency_order: function (test) {
-    test.expect(1);
+    test.expect(14);
 
-    var actual = grunt.file.read('tmp/deps'),
-        expected = grunt.file.read('test/expected/deps');
+    var actual = grunt.file.read('tmp/deps').split("\n"),
+        expected = grunt.file.read('test/expected/deps').split("\n");
     
-    test.equal(actual, expected, 'should have ordered files properly.');
+    actual.forEach(function (actualPath, i) {
+      var expectedPath = expected[i],
+          expectedIndex = actualPath.length - expectedPath.length;
+
+      test.equal(actualPath.indexOf(expectedPath), expectedIndex, 'should output dependencies in correct order.');
+    });
 
     test.done();
   },
 
   strip_requires: function (test) {
-    test.expect(12);
+    test.expect(14);
 
     var requires_rx = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m;
     

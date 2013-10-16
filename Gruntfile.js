@@ -16,6 +16,7 @@ module.exports = function(grunt) {
       all: [
         'Gruntfile.js',
         'tasks/**/*.js',
+        'test/data/**/*.js',
         '<%= nodeunit.tests %>',
       ],
       options: {
@@ -35,7 +36,7 @@ module.exports = function(grunt) {
           rootDir: './test/data',
           src: [{ path: 'vendor/', parse: false }, 'app/'],
           excludeClasses: ['Ext.*', 'MyApp.mixin.Bar'],
-          resolveFrom: 'MyApp.js',
+          resolveFrom: 'MyApp',
           // Needed for test
           tempDir: 'tmp',
           output: 'tmp/deps'

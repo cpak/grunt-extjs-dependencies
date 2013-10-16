@@ -152,5 +152,6 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## TODO
 - Use more of grunt's built-in file utils
+- Fake Ext.define and simply pick property values from input OR walk AST top down (reverse falafel)
 - include/exclude patterns
 - Extract script tags from HTML, and maybe replace them with URL of concatenated files

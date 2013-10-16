@@ -19,7 +19,6 @@ exports.init = function (grunt, opts) {
         trim = require('trim'),
 
 
-        // EXT_DEFINE_RX: /^\s*Ext\.define\(['"]([\w.]+)['"]/m,
         DEFINE_RX = /@define\s+([\w.]+)/gm,
 
         EXT_ALTERNATE_CLASS_NAME_RX = /alternateClassName:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
@@ -27,13 +26,18 @@ exports.init = function (grunt, opts) {
 
         EXTEND_NAME_RX = /^\s*extend\s*:\s*['"]([\w.]+)['"]/m,
         
-        // EXT_REQUIRES_RX = /requires:\s*\[\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]/m,
         EXT_REQUIRES_RX = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
         AT_REQUIRE_RX = /@require\s+([\w.\/\-]+)/,
-        // AT_REQUIRE_RX = /@require\s+(.+)$/,
         
         MIXINS_RX = /^\s*mixins:\s*(\{((\s*\w+\s*:\s*['"]([\w.]+)['"],?)+)\s*\})|^\s*mixins:\s*(\[\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\])/m,
         MAPVALUE_RX = /\w+\s*:\s*/,
+
+        EXT_CONTROLLERS_RX = /controllers:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
+        EXT_MODELS_RX = /models?:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
+        EXT_VIEWS_RX = /views:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
+        EXT_STORES_RX = /stores:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
+
+        EXT_APP_NAME_RX = /name\s*:\s*['"](\w+)['"]/,
 
         DOT_JS_RX = /\.js$/,
 
@@ -136,7 +140,8 @@ exports.init = function (grunt, opts) {
     function parseDefineCall(node, output) {
         var m;
         // Get class name from Ext.define('MyApp.pkg.MyClass')
-        output.classNames.push(getDefinedClassName(node));
+        output.definedName = getDefinedClassName(node);
+        output.classNames.push(output.definedName);
 
         // Parse `alternateClassName`
         m = EXT_ALTERNATE_CLASS_NAME_RX.exec(node.source());
@@ -144,10 +149,23 @@ exports.init = function (grunt, opts) {
             addClassNames(output.classNames, m[1].split(','));
         }
 
-        parseApplicationCall(node, output);
+        parseClassDefBody(node, output);
     }
 
     function parseApplicationCall(node, output) {
+        var nodeSrc = node.source(),
+            m;
+
+        m = EXT_APP_NAME_RX.exec(nodeSrc);
+        if (m && m[1]) {
+            output.definedName = getClassName(m[1]);
+            addClassNames(output.classNames, output.definedName);
+        }
+
+        parseClassDefBody(node, output);
+    }
+
+    function parseClassDefBody(node, output) {
         var nodeSrc = node.source(),
             m, c;
         // Parse `extend` annotation
@@ -165,6 +183,29 @@ exports.init = function (grunt, opts) {
             node.update(nodeSrc.replace(EXT_REQUIRES_RX, ''));
         }
 
+        // Parse `controllers: [...]` annotation
+        m = EXT_CONTROLLERS_RX.exec(nodeSrc);
+        if (m && m[1]) {
+            addClassNames(output.dependencies, extrapolateClassNames('controller', m[1].split(','), output.definedName));
+        }
+
+        // Parse `models: [...]` and `model: '...'` annotations
+        m = EXT_MODELS_RX.exec(nodeSrc);
+        if (m && m[1]) {
+            addClassNames(output.dependencies, extrapolateClassNames('model', m[1].split(','), output.definedName));
+        }
+
+        // Parse `views: [...]` annotation
+        m = EXT_VIEWS_RX.exec(nodeSrc);
+        if (m && m[1]) {
+            addClassNames(output.dependencies, extrapolateClassNames('view', m[1].split(','), output.definedName));
+        }
+
+        // Parse `stores: [...]` annotation
+        m = EXT_STORES_RX.exec(nodeSrc);
+        if (m && m[1]) {
+            addClassNames(output.dependencies, extrapolateClassNames('store', m[1].split(','), output.definedName));
+        }
 
         // Parse `mixins` annotation
         m = MIXINS_RX.exec(nodeSrc);
@@ -240,6 +281,39 @@ exports.init = function (grunt, opts) {
         if (isValidClassName(clsName)) {
             return clsName;
         }
+    }
+
+    function extrapolateClassNames(basePkgName, baseNms, dependentName) {
+        var doti, ns, baseNames, classNames;
+
+        if (!dependentName) {
+            grunt.fail.warn('Cannot extrapolate class name without namespace, in ' + _currentFilePath);
+        }
+
+        doti = dependentName.indexOf('.');
+        ns = (doti > -1 ? dependentName.substring(0, doti) : dependentName);
+
+        if (!ns) {
+            grunt.fail.warn('Cannot extrapolate class name without namespace, in ' + _currentFilePath);
+        }
+
+        baseNames = Array.isArray(baseNms) ? baseNms : [baseNms];
+        classNames = [];
+        
+        baseNames.forEach(function (n) {
+            var name = trim(n).replace(/'|"/g, ''),
+                clsName;
+            if (name.substring(0, ns.length) === ns) {
+                clsName = getClassName(name);
+            } else {
+                clsName = getClassName(ns + '.' + basePkgName + '.' + name);
+            }
+            if (clsName) {
+                classNames.push(clsName);
+            }
+        });
+
+        return classNames;
     }
 
     function shouldParseFile(filePath) {

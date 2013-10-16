@@ -1,6 +1,6 @@
 {
   "name": "grunt-extjs-dependencies",
-  "description": "Uses falafel to figure out in what order to load your ExtJs app files.",
+  "description": "Figures out in what order to load your ExtJs app files and removes 'requires: [...]'.",
   "version": "0.1.0",
   "homepage": "https://github.com/cpak/grunt-extjs-dependencies",
   "author": {
@@ -45,6 +45,6 @@
     "grunt": "~0.4.1"
   },
   "keywords": [
-    "gruntplugin"
+    "gruntplugin extjs"
   ]
 }
