@@ -303,13 +303,16 @@ exports.init = function (grunt, opts) {
         baseNames.forEach(function (n) {
             var name = trim(n).replace(/'|"/g, ''),
                 clsName;
-            if (name.substring(0, ns.length) === ns) {
-                clsName = getClassName(name);
-            } else {
-                clsName = getClassName(ns + '.' + basePkgName + '.' + name);
-            }
-            if (clsName) {
-                classNames.push(clsName);
+
+            if (name) {
+                if (name.substring(0, ns.length) === ns) {
+                    clsName = getClassName(name);
+                } else {
+                    clsName = getClassName(ns + '.' + basePkgName + '.' + name);
+                }
+                if (clsName) {
+                    classNames.push(clsName);
+                }
             }
         });
 

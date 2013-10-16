@@ -134,8 +134,7 @@ extend: 'MyApp.SuperClassName'
 mixins: ['MyApp.MixinA', 'MyApp.MixinB'] or { mixina: 'MyApp.MixinA', mixinb: 'MyApp.MixinB' } 
 ```
 
-In other words, `uses`, `views`, `models`, `controllers`, `stores` is not supported.
-
+In other words, `uses`, ~~`views`, `models`, `controllers`, `stores`~~ is not supported. As of 0.2.1 `views`, `models`, `controllers` are `stores` supported.
 And for sanity and simplicity, why not just stick to this pattern
 
 ```js
