@@ -14,7 +14,7 @@ exports.init = function (grunt, opts) {
     var options,
         array = require('array-extended'),
         falafel = require('falafel'),
-        minimatch = require('minimatch'),
+        minimatcher = require('./minimatcher'),
         path = require('path'),
         trim = require('trim'),
 
@@ -22,13 +22,13 @@ exports.init = function (grunt, opts) {
         // EXT_DEFINE_RX: /^\s*Ext\.define\(['"]([\w.]+)['"]/m,
         DEFINE_RX = /@define\s+([\w.]+)/gm,
 
-        EXT_ALTERNATE_CLASS_NAME_RX = /alternateClassName:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,/m,
+        EXT_ALTERNATE_CLASS_NAME_RX = /alternateClassName:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
         ALTERNATE_CLASS_NAME_RX = /@alternateClassName\s+([\w.]+)/gm,
 
         EXTEND_NAME_RX = /^\s*extend\s*:\s*['"]([\w.]+)['"]/m,
         
         // EXT_REQUIRES_RX = /requires:\s*\[\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]/m,
-        EXT_REQUIRES_RX = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,/m,
+        EXT_REQUIRES_RX = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
         AT_REQUIRE_RX = /@require\s+([\w.\/\-]+)/,
         // AT_REQUIRE_RX = /@require\s+(.+)$/,
         
@@ -43,8 +43,7 @@ exports.init = function (grunt, opts) {
     function readOptions(opts) {
         var options = opts || {};
         return {
-            includeClassPattern: options.includeClassPattern,
-            excludeClassPattern: options.excludeClassPattern,
+            excludeClasses: options.excludeClasses,
             skipParse: options.skipParse
         };
     }
@@ -244,21 +243,17 @@ exports.init = function (grunt, opts) {
     }
 
     function shouldParseFile(filePath) {
-        var i, l;
         if (options.skipParse) {
-            i = 0;
-            l = options.skipParse.length;
-            for (; i < l; i++) {
-                if (minimatch(filePath, options.skipParse[i], { matchBase: true })) {
-                    return false;
-                }
-            }
+            return !minimatcher(filePath, options.skipParse, { matchBase: true });
         }
         return true;
     }
 
     function isValidClassName(className) {
-        return (className && (!options.excludeClassPattern || !options.excludeClassPattern.test(className)));
+        if (className && options.excludeClasses) {
+            return !minimatcher(className, options.excludeClasses);
+        }
+        return !!className;
     }
 
     function getClass(filePath) {

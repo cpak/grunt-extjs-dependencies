@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     jshint: {
       all: [
         'Gruntfile.js',
-        'tasks/*.js',
+        'tasks/**/*.js',
         '<%= nodeunit.tests %>',
       ],
       options: {
@@ -25,20 +25,21 @@ module.exports = function(grunt) {
 
     // Before generating any new files, remove any previously-created files.
     clean: {
-      tests: ['tmp'],
+      test: ['tmp'],
     },
 
     // Configuration to be run (and then tested).
     extjs_dependencies: {
-      dev: {
+      test: {
         options: {
-          excludeClassPattern: /^Ext\./,
-          includeFilePattern: /\.js$/,
-          rootDir: '/Users/christofer/Projects/Dryleaf/ext4workspace/qwaya/',
+          rootDir: './test/data',
           src: [{ path: 'vendor/', parse: false }, 'app/'],
-          resolveFrom: 'app.js',
-          output: '/Users/christofer/Projects/Dryleaf/ext4workspace/build/slim/qwaya.js'
-        },
+          excludeClasses: ['Ext.*', 'MyApp.mixin.Bar'],
+          resolveFrom: 'MyApp.js',
+          // Needed for test
+          tempDir: 'tmp',
+          output: 'tmp/deps'
+        }
       }
     },
 
@@ -60,10 +61,9 @@ module.exports = function(grunt) {
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
   // grunt.registerTask('test', ['clean', 'extjs_dependencies', 'nodeunit']);
-
-  grunt.registerTask('dev', ['extjs_dependencies:dev']);
+  grunt.registerTask('test', ['clean', 'extjs_dependencies', 'nodeunit']);
 
   // By default, lint and run all tests.
-  grunt.registerTask('default', ['dev']);
+  grunt.registerTask('default', ['jshint', 'test']);
 
 };

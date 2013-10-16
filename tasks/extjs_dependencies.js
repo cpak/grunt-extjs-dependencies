@@ -25,7 +25,15 @@ module.exports = function (grunt) {
             deps = mapper.resolveDependencies(opts.resolveFrom);
             grunt.log.ok('Done, dependency graph has ' + deps.length + ' files.');
 
+            grunt.verbose.writeln('--------------------------------------------');
+            grunt.verbose.writeln(deps.join("\n"));
+            grunt.verbose.writeln('--------------------------------------------');
+
             grunt.config.set('extjs_dependencies_' + target, deps);
+
+            if (opts.output) {
+                grunt.file.write(opts.output, deps.join("\n"), { encoding: 'utf-8' });
+            }
 
             doneFn();
         });

@@ -1,74 +1,155 @@
-# extjs-dependencies
+# grunt-extjs-dependencies
 
-Uses [esprima](http://esprima.org) through [falafel](https://github.com/substack/node-falafel)
-to figure out in what order to load your ExtJs app files.
+> Figures out in what order to load your ExtJs app files and removes `requires: [...]`.
+
+## Getting Started
+This plugin requires Grunt `~0.4.1`
+
+If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin with this command:
+
+```shell
+npm install grunt-extjs-dependencies --save-dev
+```
+
+Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
+
+```js
+grunt.loadNpmTasks('grunt-extjs-dependencies');
+```
+
+## The "extjs_dependencies" task
+
+### Overview
+The task scans files for `Ext.define` calls (as well as some other things), parses out dependencies and saves a copy of each file with any `requires: [...]` removed in a temp dir.
+
+Paths will be preserved in the temp output, based on `rootDir` and realtive paths in `src`.
+
+Make sure classes and dependencies are defined and declared in a manner the task understands, or bad things will happen! Read more [below](#details).
+
+After the task has run, `extjs_dependencies_{TARGET NAME}` will contain the list of ordered dependencies. This can then be passed to `concat`, `uglify`, etc. See example below.
+
+In your project's Gruntfile, add a section named `extjs_dependencies` to the data object passed into `grunt.initConfig()`.
+
+```js
+grunt.initConfig({
+  extjs_dependencies: {
+    options: {
+      rootDir: 'path/to/js/project',
+      src: [{ path: 'vendor/', parse: false }, 'app/'],
+      excludeClasses: ['Ext.*', 'MyApp.some.Class'],
+      resolveFrom: 'MyApp.js'
+    }
+  },
+})
+```
+
+### Options
+
+#### options.rootDir
+Type: `String`
+Default value: `process.cwd()`
+
+Sets the project root. This is used to calculate realtive paths when copying stripped files to the temp dir.
+
+#### options.src
+Type: `Array`
+
+These paths will be added to the "classpath", meaning all contained files will be scanned for ExtJs class definitions, unless the `parse: false` option is passed.
+
+Paths can be passed either as strings or as objects containing a `path` property and a `parse` boolean, indicating wether or not the task should try to extract class data from the contained files. Set this to false when adding non-Ext files to the classpath.
+
+#### options.excludeClasses
+Type: `Array`
+Default: `['Ext.*']`
+
+Array of `minimatch` patterns. Any found class names matching any of these patterns will be excluded from the classpath.
+
+The default value excludes all Ext classes, since the task is biased towards loading e pre-build version of Ext (e.g. from Sencha's CDN).
+
+#### options.resolveFrom
+Type: `String|Array`
+
+One or more file or class names, or paths, from where to begin resolving depencies. This should probably be your app's entry point (e.g. `App.js`).
+
+
+### Usage Examples
+
+#### Default Options
+The config below will add all JavaScript files in `./test/data/vendor` and `./test/data/app` to the classpath. Files under `./test/data/vendor` will not be parsed.
+
+All Ext classes will be excluded, as well as the exact class `MyApp.mixin.Bar`.
+
+Dependencies will be resolved from `MyApp.js`. `extjs_dependencies_dist` will contain the ordered dependency list, which can be passed to other tasks (e.g. `concat`).
+
+```js
+grunt.initConfig({
+  extjs_dependencies: {
+    dist: {
+      options: {
+        rootDir: './test/data',
+        src: [{ path: 'vendor/', parse: false }, 'app/'],
+        excludeClasses: ['Ext.*', 'MyApp.mixin.Bar'],
+        resolveFrom: 'MyApp.js'
+      }
+    }
+  },
+
+  concat: {
+    dist: {
+      src: ['<%= extjs_dependencies_dist %>'],
+      dest: 'dist/app.js'
+    }
+  }
+})
+```
+
+
+## Details
 
 Classes are exptected to be defined using 
 
-	Ext.define('MyApp.package.ClassName', { /* Class def */ })	
+```js
+Ext.define('MyApp.package.ClassName', { /* Class def */ })  
+```
+
 Alternate class names are accepted via any of these methods
 
-	alternateClassName: ['OtherClassName', 'ThisIsTheSameClass']
-	
-	alternateClassName: 'OtherClassName'
+```js
+alternateClassName: ['OtherClassName', 'ThisIsTheSameClass']
 
-	//@alternateClassName MyApp.ShortHandClassName
+alternateClassName: 'OtherClassName'
+
+//@alternateClassName MyApp.ShortHandClassName
+```
 
 Dependencies are calculated by looking for any of these comments and annotations:
 
-	//@require MyApp.ClassName or path/to/file
-	
-	requires: ['MyApp.ClassName']
-	
-	extend: 'MyApp.SuperClassName'
-		
-	mixins: ['MyApp.MixinA', 'MyApp.MixinB'] or { mixina: 'MyApp.MixinA', mixinb: 'MyApp.MixinB' } 
+```js
+//@require MyApp.ClassName or path/to/file
 
-In other words, `uses`, `views`, `models`, `controllers`,  `stores` is not supported.
+requires: ['MyApp.ClassName']
+
+extend: 'MyApp.SuperClassName'
+  
+mixins: ['MyApp.MixinA', 'MyApp.MixinB'] or { mixina: 'MyApp.MixinA', mixinb: 'MyApp.MixinB' } 
+```
+
+In other words, `uses`, `views`, `models`, `controllers`, `stores` is not supported.
 
 And for sanity and simplicity, why not just stick to this pattern
 
-	Ext.define('MyApp.tools.Sport', {
-		extend: 'MyApp.tools.Base',
-		requires: ['MyApp.util.Knife', 'MyApp.service.Spoon']
-	});
-
-
+```js
+Ext.define('MyApp.tools.Sport', {
+  extend: 'MyApp.tools.Base',
+  requires: ['MyApp.util.Knife', 'MyApp.service.Spoon']
+});
+```
 
 **Note:** Running it against the ExtJs source does currently not work. This is because the dependency order in the ExtJs library relies on tags/annotations (e.g. `@tag`) other than the ones used in most ExtJs projects (e.g. `requires: […]`, `@require`). One solution is to use this module on your own project JS, and then include a suitable minified version of `ext-all.js`, either self-served or via a CDN. This is not optimal but also not a prioritized problem to solve.
 
-## Intall
-
-	$ git clone git@github.com:cpak/extjs-dependencies.git
-	$ cd extjs-dependencies
-	$ npm install
-
-## Example
-
-	var extjsDependencies = require('./extjs-dependencies')({
-	    excludeClassPattern: /^Dont\.want\.these\./,
-	    includeFilePattern: /\.js$/,
-
-	    rootDir: '/path/to/js/root/'
-	});
-
-	// Add dirs to "classpath". Passing false as the second argument
-	// prevents parsing of the file. Parsing non-Ext files will just
-	// end in confusion.
-
-	extjsDependencies.addDir('vendor/', false);
-	extjsDependencies.addDir('app/');
-
-	// Resolve dependencies of "app.js" and concat files to output destination.
-
-	extjsDependencies.build('app.js', '/path/to/output/app.js');
-
+## Contributing
+In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## TODO
-
--	Make configurable
--	Make grunt plugin
--	Add tests
--	Make async
--	Write docs
--	Tidy up
+- Use more of grunt's built-in file utils
+- Extract script tags from HTML, and maybe replace them with URL of concatenated files

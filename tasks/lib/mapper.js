@@ -4,13 +4,12 @@
 exports.init = function (grunt, opts, cb) {
     var options,
     
-        fs = require('fs'),
-        nfs = require('node-fs'),
         path = require('path'),
         Promise = require('promise'),
+        // minimatcher = require('./minimatcher'),
         tmp = require('tmp'),
         tmpdirp = Promise.denodeify(tmp.dir),
-    
+
         parser,
         graph = require('./graph').init(grunt),
 
@@ -27,33 +26,23 @@ exports.init = function (grunt, opts, cb) {
             rootDir = options.rootDir || process.cwd();
             
         return {
-            includeFilePattern: options.includeFilePattern,
-            excludeFilePattern: options.excludeFilePattern,
+            includeFilePattern: options.includeFilePattern || /\.js$/,
+            excludeFiles: options.excludeFiles,
 
             skipParse: options.skipParse,
 
             rootDir: rootDir,
             
-            includeClassPattern: options.includeClassPattern,
-            excludeClassPattern: options.excludeClassPattern,
+            excludeClasses: options.excludeClasses || ['Ext.*'],
 
-            tempDir: path.resolve(rootDir, options.tempDir || './extjs-dependencies-tmp')
+            tempDir: (options.tempDir ? path.resolve(process.cwd(), options.tempDir) : null)
         };
     }
     
-    function createDir(dirPath) {
-        if (!fs.existsSync(dirPath)) {
-            nfs.mkdirSync(dirPath, '0777', true);
-        }
-    }
-
     function readDir(dirPath, parse) {
-        fs.readdirSync(dirPath).forEach(function (fileName) {
-            var filePath = path.join(dirPath, fileName);
-            if ( fs.statSync(filePath).isDirectory() ) {
-                readDir(filePath, parse);
-            } else if ( shouldProcessFile(fileName) ) {
-                readFile(filePath, parse);
+        grunt.file.recurse(dirPath, function (abspath) {
+            if ( shouldProcessFile(abspath) ) {
+                readFile(abspath, parse);
             }
         });
     }
@@ -63,14 +52,14 @@ exports.init = function (grunt, opts, cb) {
             data, node;
         
         if (parse) {
-            data = fs.readFileSync(filePath, { encoding: 'utf-8' });
+            data = grunt.file.read(filePath, { encoding: 'utf-8' });
             if (data && (node = parser.parse(data, outputPath))) {
                 graph.addNode(node);
-                writeFile(outputPath, node.src);
+                grunt.file.write(outputPath, node.src, { encoding: 'utf-8' });
             }
         } else {
             graph.addNode(parser.getClass(outputPath));
-            copyFile(filePath, outputPath);
+            grunt.file.copy(filePath, outputPath, { encoding: 'utf-8' });
         }
         fileCounter++;
     }
@@ -79,27 +68,17 @@ exports.init = function (grunt, opts, cb) {
         return path.join(options.tempDir, path.relative(options.rootDir, filePath));
     }
 
-    function shouldProcessFile(fileName) {
+    function shouldProcessFile(filePath) {
         var p = true;
         if (options.includeFilePattern) {
-            p = options.includeFilePattern.test(fileName);
-        } else if (options.excludeFilePattern) {
-            p = !options.excludeFilePattern.test(fileName);
+            p = options.includeFilePattern.test(filePath);
+        //     if (p && options.excludeFiles) {
+        //         p = !minimatcher(filePath, options.excludeFiles);
+        //     }
+        // } else if (options.excludeFiles) {
+        //     p = !minimatcher(filePath, options.excludeFiles);
         }
         return p;
-    }
-
-    function writeFile(filePath, data) {
-        createDir(path.dirname(filePath));
-        fs.writeFileSync(filePath, data);
-    }
-
-    function copyFile(source, target) {
-        var content = fs.readFileSync(source);
-        
-        createDir(path.dirname(target));
-
-        fs.writeFileSync(target, content);
     }
 
     exports.addDir = function (dirs, parse) {
@@ -118,7 +97,7 @@ exports.init = function (grunt, opts, cb) {
                 parse = dir.parse !== false;
             }
             
-            grunt.verbose.writeln('Adding dir "' + dirPath);
+            grunt.verbose.writeln('Adding dir ' + dirPath);
             
             readDir(dirPath, parse);
         });
@@ -133,18 +112,33 @@ exports.init = function (grunt, opts, cb) {
     options = readOptions(opts);
     parser = require('./parser.js').init(grunt, options);
 
-    tmpdirp({
-        mode: '0777',
-        prefix: 'extjs_dependencies_',
-        unsafeCleanup: true
-    });
+    grunt.verbose.write('Create temp folder... ');
+    
+    if (!options.tempDir) {
+        initPromise = tmpdirp({
+            mode: '0777',
+            prefix: 'extjs_dependencies_',
+            unsafeCleanup: true
+        }).then(function (path) {
+            grunt.verbose.ok('Done, ' + path);
+            options.tempDir = path;
+            return exports;
+        }, function (reason) {
+            grunt.fail.warn(reason);
+        });
+    } else {
+        initPromise = new Promise(function (done, fail) {
+            try {
+                grunt.file.mkdir(options.tempDir);
+                grunt.verbose.ok('Done, ' + options.tempDir);
+                done(exports);
+            } catch (e) {
+                fail(e);
+                grunt.fail.warn(e);
+            }
+        });
+    }
 
-    initPromise = tmpdirp(options.tempDir).then(function (path) {
-        options.tempDir = path;
-        return exports;
-    }, function (reason) {
-        grunt.fail.warn(reason);
-    });
 
     if (typeof cb === 'function') {
         initPromise.then(cb);
