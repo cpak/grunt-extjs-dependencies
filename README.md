@@ -152,4 +152,5 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## TODO
 - Use more of grunt's built-in file utils
+- include/exclude patterns
 - Extract script tags from HTML, and maybe replace them with URL of concatenated files
