@@ -14,8 +14,8 @@ module.exports = function (grunt) {
             doneFn = this.async(),
             target = this.target;
 
-        require('./lib/mapper').init(grunt, opts).then(function (mapper) {
-            var numFiles, deps;
+        require('./lib/mapper').init(grunt, opts).done(function (mapper) {
+            var numFiles, deps, required, diff;
 
             grunt.log.writeln('Adding ' + opts.src.length + ' directories to classpath...');
             numFiles = mapper.addDir(opts.src);
@@ -23,16 +23,22 @@ module.exports = function (grunt) {
 
             grunt.log.writeln('Resolving dependencies...');
             deps = mapper.resolveDependencies(opts.resolveFrom);
-            grunt.log.ok('Done, dependency graph has ' + deps.length + ' files.');
+            required = deps.required;
+            diff = deps.diff;
+            grunt.log.ok('Done, dependency graph has ' + required.length + ' files.');
 
-            grunt.verbose.writeln('--------------------------------------------');
-            grunt.verbose.writeln(deps.join("\n"));
-            grunt.verbose.writeln('--------------------------------------------');
+            grunt.verbose.writeln('----------------- Required files -----------------');
+            grunt.verbose.writeln(required.join("\n"));
+            
+            if (diff && diff.length) {
+                grunt.verbose.writeln('------------------ Unused files ------------------');
+                grunt.verbose.writeln(diff.join("\n"));
+            }
 
-            grunt.config.set('extjs_dependencies_' + target, deps);
+            grunt.config.set('extjs_dependencies_' + target, required);
 
             if (opts.output) {
-                grunt.file.write(opts.output, deps.join("\n"), { encoding: 'utf-8' });
+                grunt.file.write(opts.output, required.join("\n"), { encoding: 'utf-8' });
             }
 
             doneFn();

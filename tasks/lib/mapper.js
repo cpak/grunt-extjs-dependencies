@@ -3,7 +3,8 @@
 
 exports.init = function (grunt, opts, cb) {
     var options,
-    
+        
+        array = require('array-extended'),
         path = require('path'),
         Promise = require('promise'),
         // minimatcher = require('./minimatcher'),
@@ -105,9 +106,13 @@ exports.init = function (grunt, opts, cb) {
         return fileCounter;
     };
 
-    exports.resolveDependencies = graph.getDependencies;
-
-
+    exports.resolveDependencies = function () {
+        var required = graph.getDependencies.apply(graph, arguments);
+        return {
+            required: required,
+            diff: array.difference(graph.getAllNodePaths(), required)
+        };
+    };
 
     options = readOptions(opts);
     parser = require('./parser.js').init(grunt, options);

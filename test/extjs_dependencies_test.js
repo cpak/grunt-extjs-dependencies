@@ -27,15 +27,15 @@ exports.extjs_dependencies = {
     test.expect(1);
 
     var actual = grunt.file.expand('tmp/**/*.js').length,
-        expected = 14;
+        expected = 16;
     
-    test.equal(actual, expected, 'should have generated 14 output files.');
+    test.equal(actual, expected, 'should have generated 16 output files.');
 
     test.done();
   },
 
   dependency_order: function (test) {
-    test.expect(14);
+    test.expect(15);
 
     var actual = grunt.file.read('tmp/deps').split("\n"),
         expected = grunt.file.read('test/expected/deps').split("\n");
@@ -50,15 +50,22 @@ exports.extjs_dependencies = {
     test.done();
   },
 
-  strip_requires: function (test) {
-    test.expect(14);
+  strip_requires_and_uses: function (test) {
+    test.expect(30);
 
-    var requires_rx = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m;
+    var files = grunt.file.read('test/expected/deps').split("\n").map(function (p) {
+          return 'tmp/' + p;
+        }),
+        requires_rx = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
+        uses_rx = /uses:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m;
     
-    grunt.file.expand('tmp/**/*.js').forEach(function (filePath) {
+    files.forEach(function (filePath) {
       var content = grunt.file.read(filePath),
-          actual = requires_rx.test(content);
-      test.equal(actual, false, 'should have removed all "requires: [...]" from output files.');
+          actualReq = requires_rx.test(content),
+          actualUse = uses_rx.test(content);
+      
+      test.equal(actualReq, false, 'should have removed all "requires: [...]" from ' + filePath);
+      test.equal(actualUse, false, 'should have removed all "uses: [...]" from ' + filePath);
     });
 
     test.done();

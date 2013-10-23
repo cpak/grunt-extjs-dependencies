@@ -7,6 +7,7 @@ app/ux/ReqB.js
 app/mixin/MixinA.js
 app/mixin/MixinB.js
 app/controller/MyController.js
+app/ux/UseMe.js
 app/view/Main.js
 app/view/details/Details.js
 vendor/mylib/mylib.js

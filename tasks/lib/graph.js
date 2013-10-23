@@ -100,6 +100,10 @@ exports.init = function (grunt) {
         return resolvedNodes;
     }
 
+    function getAllNodePaths () {
+        return Object.keys(allNodesByPath);
+    }
+
     function resolveDependencies(nodes, resolvedNodes) {
         nodes.forEach(function (node) {
             if (resolvedNodes.indexOf(node.path) === -1) {
@@ -177,6 +181,7 @@ exports.init = function (grunt) {
 
     exports.addNode = addNode;
     exports.getDependencies = getDependencies;
+    exports.getAllNodePaths = getAllNodePaths;
 
     return exports;
 };

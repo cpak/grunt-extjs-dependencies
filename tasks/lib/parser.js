@@ -28,6 +28,8 @@ exports.init = function (grunt, opts) {
         
         EXT_REQUIRES_RX = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
         AT_REQUIRE_RX = /@require\s+([\w.\/\-]+)/,
+
+        EXT_USES_RX = /uses:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
         
         MIXINS_RX = /^\s*mixins:\s*(\{((\s*\w+\s*:\s*['"]([\w.]+)['"],?)+)\s*\})|^\s*mixins:\s*(\[\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\])/m,
         MAPVALUE_RX = /\w+\s*:\s*/,
@@ -182,6 +184,15 @@ exports.init = function (grunt, opts) {
             // Remove `requires` from parsed file
             node.update(nodeSrc.replace(EXT_REQUIRES_RX, ''));
         }
+
+        // Parse `uses: [...]` annotation
+        m = EXT_USES_RX.exec(nodeSrc);
+        if (m && m[1]) {
+            addClassNames(output.dependencies, m[1].split(','));
+            
+            // Remove `uses` from parsed file
+            node.update(nodeSrc.replace(EXT_USES_RX, ''));
+        }        
 
         // Parse `controllers: [...]` annotation
         m = EXT_CONTROLLERS_RX.exec(nodeSrc);

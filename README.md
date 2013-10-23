@@ -1,6 +1,6 @@
 # grunt-extjs-dependencies
 
-> Figures out in what order to load your ExtJs app files and removes `requires: [...]`.
+> Uses static analysis to figure out in what order to load your ExtJs app files.
 
 ## Getting Started
 This plugin requires Grunt `~0.4.1`
@@ -134,7 +134,7 @@ extend: 'MyApp.SuperClassName'
 mixins: ['MyApp.MixinA', 'MyApp.MixinB'] or { mixina: 'MyApp.MixinA', mixinb: 'MyApp.MixinB' } 
 ```
 
-In other words, `uses`, ~~`views`, `models`, `controllers`, `stores`~~ is not supported. As of 0.2.1 `views`, `models`, `controllers` are `stores` supported.
+In other words, ~~`uses`, `views`, `models`, `controllers`, `stores`~~ is not supported. As of 0.2.2 `uses`, `views`, `models`, `controllers` are `stores` supported.
 And for sanity and simplicity, why not just stick to this pattern
 
 ```js
@@ -151,6 +151,6 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## TODO
 - Use more of grunt's built-in file utils
-- Fake Ext.define and simply pick property values from input OR walk AST top down (reverse falafel)
+- Fake ~~Ext.define and simply pick property values from input OR~~ walk AST top down (reverse falafel)
 - include/exclude patterns
 - Extract script tags from HTML, and maybe replace them with URL of concatenated files
