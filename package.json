@@ -4,6 +4,7 @@
   "version": "0.2.2",
   "homepage": "https://github.com/cpak/grunt-extjs-dependencies",
   "author": {
+    "name": "Christofer",
     "email": "christoferpak@gmail.com"
   },
   "repository": {
@@ -45,6 +46,6 @@
     "grunt": "~0.4.1"
   },
   "keywords": [
-    "gruntplugin extjs"
+    "gruntplugin", "extjs"
   ]
 }
