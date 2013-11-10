@@ -20,7 +20,8 @@
 
 'use strict';
 
-var grunt = require('grunt');
+var grunt = require('grunt'),
+    path = require('path');
 
 exports.extjs_dependencies = {
   number_of_files: function (test) {
@@ -43,6 +44,8 @@ exports.extjs_dependencies = {
     actual.forEach(function (actualPath, i) {
       var expectedPath = expected[i],
           expectedIndex = actualPath.length - expectedPath.length;
+
+      actualPath = actualPath.replace(new RegExp('\\' + path.sep, 'g'), '/');
 
       test.equal(actualPath.indexOf(expectedPath), expectedIndex, 'should output dependencies in correct order.');
     });

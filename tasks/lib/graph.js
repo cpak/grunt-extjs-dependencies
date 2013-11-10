@@ -11,7 +11,6 @@ exports.init = function (grunt) {
         DOT_JS_RX = /\.js$/,
         DOT_RX = /\./,
         GLOB_RX = /\.\*$/,
-
         path = require('path'),
 
         exports = {};
