@@ -11,7 +11,8 @@ exports.init = function (grunt) {
         DOT_JS_RX = /\.js$/,
         DOT_RX = /\./,
         GLOB_RX = /\.\*$/,
-        PATH_RX = /\//,
+
+        path = require('path'),
 
         exports = {};
 
@@ -27,13 +28,13 @@ exports.init = function (grunt) {
         var nodeNames = node.names,
             i = 0,
             l = nodeNames.length;
-        
+
         for (; i < l; i++) {
             allNodeNames.push(nodeNames[i]);
             addIfNotExists(allNodesByName, nodeNames[i], node);
         }
     }
-    
+
     function addNodeToMap(node) {
         node.names.forEach(function (nodeName) {
             var path = splitPath(nodeName),
@@ -45,15 +46,15 @@ exports.init = function (grunt) {
                 addIfNotExists(parent, path.parents[i], {});
                 parent = parent[path.parents[i]];
             }
-            
+
             addIfNotExists(parent, path.node, node);
         });
     }
-    
+
     function splitPath(path) {
         var parts = path.replace(DOT_JS_RX, '').split('.'),
             parents, node;
-        
+
         if (parts.length > 1) {
             parents = parts.slice(0, parts.length - 1);
             node = parts[parts.length - 1];
@@ -67,10 +68,10 @@ exports.init = function (grunt) {
             node: node
         };
     }
-    
+
     function addIfNotExists(target, key, value) {
         if (!target[key]) {
-            
+
             if ((typeof target !== 'object')) {
                 throw new Error('Expected object');
             }
@@ -88,7 +89,7 @@ exports.init = function (grunt) {
             nodes = [];
 
         grunt.verbose.writeln('Resolve from ' + from.join(', '));
-        
+
         from.forEach(function (name) {
             Array.prototype.push.apply(nodes, resolveName(name));
         });
@@ -122,7 +123,7 @@ exports.init = function (grunt) {
     }
 
     function resolveName(name) {
-        if (PATH_RX.test(name)) {
+        if (~(name || '').indexOf(path.sep)) {
             return resolvePath(name);
         } else {
             return resolveClassName(name);
@@ -143,7 +144,7 @@ exports.init = function (grunt) {
             pkgName = name.replace(GLOB_RX, '');
             lcd = pkgName.split(DOT_RX);
             pkg = map;
-            
+
             while (key = lcd.shift()) {
                 if (!pkg[key]) {
                     grunt.fail.warn('Missing package "' + lcd.concat([key]).join('.') + '".');
