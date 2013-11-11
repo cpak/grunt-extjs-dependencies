@@ -88,12 +88,6 @@ exports.init = function (grunt, opts) {
             }
         } else {
             grunt.verbose.writeln('Skip parse ' + baseName);
-            cls = new ExtClass({
-                names: [baseName],
-                dependencies: [],
-                src: classData.src,
-                path: filePath
-            });
         }
 
         _currentFilePath = null;

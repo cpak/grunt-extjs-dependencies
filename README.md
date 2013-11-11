@@ -37,6 +37,7 @@ grunt.initConfig({
       rootDir: 'path/to/js/project',
       src: [{ path: 'vendor/', parse: false }, 'app/'],
       excludeClasses: ['Ext.*', 'MyApp.some.Class'],
+      skipParse: ['**/app/ux/SkipMe.js'],
       resolveFrom: 'MyApp.js'
     }
   },
@@ -65,6 +66,14 @@ Default: `['Ext.*']`
 Array of `minimatch` patterns. Any found class names matching any of these patterns will be excluded from the classpath.
 
 The default value excludes all Ext classes, since the task is biased towards loading e pre-build version of Ext (e.g. from Sencha's CDN).
+
+#### options.skipParse
+Type: `Array`
+Default: `[]`
+
+Array of file glob patterns. Any files matching any of these patterns will be excluded.
+
+By default no files are excluded.
 
 #### options.resolveFrom
 Type: `String|Array`
@@ -106,10 +115,10 @@ grunt.initConfig({
 
 ## Details
 
-Classes are exptected to be defined using 
+Classes are exptected to be defined using
 
 ```js
-Ext.define('MyApp.package.ClassName', { /* Class def */ })  
+Ext.define('MyApp.package.ClassName', { /* Class def */ })
 ```
 
 Alternate class names are accepted via any of these methods
@@ -130,8 +139,8 @@ Dependencies are calculated by looking for any of these comments and annotations
 requires: ['MyApp.ClassName']
 
 extend: 'MyApp.SuperClassName'
-  
-mixins: ['MyApp.MixinA', 'MyApp.MixinB'] or { mixina: 'MyApp.MixinA', mixinb: 'MyApp.MixinB' } 
+
+mixins: ['MyApp.MixinA', 'MyApp.MixinB'] or { mixina: 'MyApp.MixinA', mixinb: 'MyApp.MixinB' }
 ```
 
 In other words, ~~`uses`, `views`, `models`, `controllers`, `stores`~~ is not supported. As of 0.2.2 `uses`, `views`, `models`, `controllers` are `stores` supported.
