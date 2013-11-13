@@ -28,9 +28,9 @@ exports.extjs_dependencies = {
     test.expect(1);
 
     var actual = grunt.file.expand('tmp/**/*.js').length,
-        expected = 16;
+        expected = 17;
 
-    test.equal(actual, expected, 'should have generated 16 output files.');
+    test.equal(actual, expected, 'should have generated 17 output files.');
 
     test.done();
   },
