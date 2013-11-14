@@ -37,6 +37,9 @@ module.exports = function(grunt) {
           src: [{ path: 'vendor/', parse: false }, 'app/'],
           excludeClasses: ['Ext.*', 'MyApp.mixin.Bar'],
           resolveFrom: 'MyApp',
+          skipParse: [
+            '**/app/ux/SkipMe.js'
+          ],
           // Needed for test
           tempDir: 'tmp',
           output: 'tmp/deps'

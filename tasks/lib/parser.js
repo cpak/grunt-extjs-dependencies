@@ -25,12 +25,12 @@ exports.init = function (grunt, opts) {
         ALTERNATE_CLASS_NAME_RX = /@alternateClassName\s+([\w.]+)/gm,
 
         EXTEND_NAME_RX = /^\s*extend\s*:\s*['"]([\w.]+)['"]/m,
-        
+
         EXT_REQUIRES_RX = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
         AT_REQUIRE_RX = /@require\s+([\w.\/\-]+)/,
 
         EXT_USES_RX = /uses:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
-        
+
         MIXINS_RX = /^\s*mixins:\s*(\{((\s*\w+\s*:\s*['"]([\w.]+)['"],?)+)\s*\})|^\s*mixins:\s*(\[\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\])/m,
         MAPVALUE_RX = /\w+\s*:\s*/,
 
@@ -64,7 +64,7 @@ exports.init = function (grunt, opts) {
 
         if (shouldParseFile(filePath)) {
             grunt.verbose.write('Parse ' + baseName + '... ');
-            
+
             classData = getClassData(src);
 
             if (classData.classNames.length) {
@@ -91,7 +91,7 @@ exports.init = function (grunt, opts) {
             cls = new ExtClass({
                 names: [baseName],
                 dependencies: [],
-                src: classData.src,
+                src: src, // classData is always undefined
                 path: filePath
             });
         }
@@ -118,7 +118,7 @@ exports.init = function (grunt, opts) {
                         parseApplicationCall(node, output);
                     }
                     break;
-                
+
                 // Comments
                 case 'Block':
                 case 'Line':
@@ -180,7 +180,7 @@ exports.init = function (grunt, opts) {
         m = EXT_REQUIRES_RX.exec(nodeSrc);
         if (m && m[1]) {
             addClassNames(output.dependencies, m[1].split(','));
-            
+
             // Remove `requires` from parsed file
             node.update(nodeSrc.replace(EXT_REQUIRES_RX, ''));
         }
@@ -189,10 +189,10 @@ exports.init = function (grunt, opts) {
         m = EXT_USES_RX.exec(nodeSrc);
         if (m && m[1]) {
             addClassNames(output.dependencies, m[1].split(','));
-            
+
             // Remove `uses` from parsed file
             node.update(nodeSrc.replace(EXT_USES_RX, ''));
-        }        
+        }
 
         // Parse `controllers: [...]` annotation
         m = EXT_CONTROLLERS_RX.exec(nodeSrc);
@@ -278,7 +278,7 @@ exports.init = function (grunt, opts) {
 
     function addClassNames(target, nms) {
         var names = Array.isArray(nms) ? nms : [nms];
-        
+
         names.forEach(function (raw) {
             var name = getClassName(raw);
             if (name) {
@@ -310,7 +310,7 @@ exports.init = function (grunt, opts) {
 
         baseNames = Array.isArray(baseNms) ? baseNms : [baseNms];
         classNames = [];
-        
+
         baseNames.forEach(function (n) {
             var name = trim(n).replace(/'|"/g, ''),
                 clsName;
