@@ -1,7 +1,7 @@
 {
   "name": "grunt-extjs-dependencies",
   "description": "Uses static analysis to figure out in what order to load your ExtJs app files.",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "homepage": "https://github.com/cpak/grunt-extjs-dependencies",
   "author": {
     "name": "Christofer",

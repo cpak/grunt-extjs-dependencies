@@ -138,28 +138,22 @@ Dependencies are calculated by looking for any of these comments and annotations
 
 requires: ['MyApp.ClassName']
 
+uses: ['MyApp.ClassName']
+
 extend: 'MyApp.SuperClassName'
 
 mixins: ['MyApp.MixinA', 'MyApp.MixinB'] or { mixina: 'MyApp.MixinA', mixinb: 'MyApp.MixinB' }
+
+models, views, controllers, stores: ['Users', 'MyApp.users.User']
 ```
 
-In other words, ~~`uses`, `views`, `models`, `controllers`, `stores`~~ is not supported. As of 0.2.2 `uses`, `views`, `models`, `controllers` are `stores` supported.
-And for sanity and simplicity, why not just stick to this pattern
-
-```js
-Ext.define('MyApp.tools.Sport', {
-  extend: 'MyApp.tools.Base',
-  requires: ['MyApp.util.Knife', 'MyApp.service.Spoon']
-});
-```
-
-**Note:** Running it against the ExtJs source does currently not work. This is because the dependency order in the ExtJs library relies on tags/annotations (e.g. `@tag`) other than the ones used in most ExtJs projects (e.g. `requires: […]`, `@require`). One solution is to use this module on your own project JS, and then include a suitable minified version of `ext-all.js`, either self-served or via a CDN. This is not optimal but also not a prioritized problem to solve.
+**Note:** Running it against the ExtJs source does currently not work. This is because the dependency order in the ExtJs library relies on tags/annotations (e.g. `@tag`) other than the ones used in most ExtJs projects (e.g. `requires: […]`, `@require`). One solution is to run this task on your own project JavaScript files only, and include a suitable minified version of `ext-all.js`, either self-served or via a CDN. This is not optimal but also not a prioritized problem to solve.
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## TODO
 - Use more of grunt's built-in file utils
-- Fake ~~Ext.define and simply pick property values from input OR~~ walk AST top down (reverse falafel)
+- Reverse direction when walking AST
 - include/exclude patterns
 - Extract script tags from HTML, and maybe replace them with URL of concatenated files
