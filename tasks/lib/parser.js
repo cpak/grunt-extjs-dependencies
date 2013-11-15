@@ -24,22 +24,7 @@ exports.init = function (grunt, opts) {
         EXT_ALTERNATE_CLASS_NAME_RX = /alternateClassName:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
         ALTERNATE_CLASS_NAME_RX = /@alternateClassName\s+([\w.]+)/gm,
 
-        EXTEND_NAME_RX = /^\s*extend\s*:\s*['"]([\w.]+)['"]/m,
-
-        EXT_REQUIRES_RX = /requires:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
         AT_REQUIRE_RX = /@require\s+([\w.\/\-]+)/,
-
-        EXT_USES_RX = /uses:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
-
-        MIXINS_RX = /^\s*mixins:\s*(\{((\s*\w+\s*:\s*['"]([\w.]+)['"],?)+)\s*\})|^\s*mixins:\s*(\[\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\])/m,
-        MAPVALUE_RX = /\w+\s*:\s*/,
-
-        EXT_CONTROLLERS_RX = /controllers:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
-        EXT_MODELS_RX = /models?:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
-        EXT_VIEWS_RX = /views:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
-        EXT_STORES_RX = /stores:\s*\[?\s*((['"]([\w.*]+)['"]\s*,?\s*)+)\s*\]?,?/m,
-
-        EXT_APP_NAME_RX = /name\s*:\s*['"](\w+)['"]/,
 
         DOT_JS_RX = /\.js$/,
 
@@ -155,77 +140,144 @@ exports.init = function (grunt, opts) {
     }
 
     function parseApplicationCall(node, output) {
-        var nodeSrc = node.source(),
-            m;
+        var p;
 
-        m = EXT_APP_NAME_RX.exec(nodeSrc);
-        if (m && m[1]) {
-            output.definedName = getClassName(m[1]);
+        p = getClassDefProperty(node, 'name');
+        if (p) {
+            output.definedName = getClassName(getPropertyValue(p));
             addClassNames(output.classNames, output.definedName);
         }
 
         parseClassDefBody(node, output);
     }
 
+    function collectPropertyValues(prop) {
+        var i = 0,
+            el,
+            result = [],
+            value = prop.value,
+            els = value.elements || value.properties;
+
+        for (; i < els.length; i++) {
+            el = els[i];
+            if (el.type === 'Literal') {
+                result.push(el.value);
+            } else if (el.type === 'Property' && el.value.type === 'Literal') {
+                result.push(el.value.value);
+            }
+        }
+
+        return result;
+    }
+
+    function getClassDefProperty(node, name) {
+        var arg,
+            obj,
+            i,
+            prop;
+
+        if (node.expression && node.expression.arguments) {
+            for (i = 0; i < node.expression.arguments.length; i++) {
+                arg = node.expression.arguments[i];
+                if (arg.properties) {
+                    obj = arg;
+                    break;
+                }
+            }
+        }
+
+        if (obj) {
+            for (i = 0; i < obj.properties.length; i++) {
+                prop = obj.properties[i];
+                if (prop.key.name === name) {
+                    return prop;
+                }
+            }
+        }
+    }
+
+    function getPropertyValue(prop) {
+        if (prop && prop.value) {
+            if (prop.value.type === 'Literal') {
+                return prop.value.value;
+            } else if (prop.value.type === 'ArrayExpression') {
+                return collectPropertyValues(prop);
+            }
+        }
+    }
+
+    function getClassDefValue(node, name, forceArray) {
+        var val = getPropertyValue(getClassDefProperty(node, name));
+
+        if (val && forceArray && !Array.isArray(val)) {
+            val = [val];
+        }
+
+        return val;
+    }
+
     function parseClassDefBody(node, output) {
         var nodeSrc = node.source(),
-            m, c;
+            m,
+            p,
+            c;
         // Parse `extend` annotation
-        m = EXTEND_NAME_RX.exec(nodeSrc);
-        if (m && m[1] && ( c = getClassName(m[1]) )) {
+        m = getClassDefValue(node, 'extend');
+
+        if (m && ( c = getClassName(m) )) {
             output.parentName = c;
         }
 
         // Parse `requires` annotation
-        m = EXT_REQUIRES_RX.exec(nodeSrc);
-        if (m && m[1]) {
-            addClassNames(output.dependencies, m[1].split(','));
+        p = getClassDefProperty(node, 'requires');
+        if (p) {
+            addClassNames(output.dependencies, getPropertyValue(p));
 
             // Remove `requires` from parsed file
-            node.update(nodeSrc.replace(EXT_REQUIRES_RX, ''));
+            p.update('requires: []');
         }
 
         // Parse `uses: [...]` annotation
-        m = EXT_USES_RX.exec(nodeSrc);
-        if (m && m[1]) {
-            addClassNames(output.dependencies, m[1].split(','));
+        p = getClassDefProperty(node, 'uses');
+        if (p) {
+            addClassNames(output.dependencies, getPropertyValue(p));
 
             // Remove `uses` from parsed file
-            node.update(nodeSrc.replace(EXT_USES_RX, ''));
+            p.update('uses: []');
         }
 
         // Parse `controllers: [...]` annotation
-        m = EXT_CONTROLLERS_RX.exec(nodeSrc);
-        if (m && m[1]) {
-            addClassNames(output.dependencies, extrapolateClassNames('controller', m[1].split(','), output.definedName));
+        m = getClassDefValue(node, 'controllers', true);
+        if (m) {
+            addClassNames(output.dependencies, extrapolateClassNames('controller', m, output.definedName));
         }
 
         // Parse `models: [...]` and `model: '...'` annotations
-        m = EXT_MODELS_RX.exec(nodeSrc);
-        if (m && m[1]) {
-            addClassNames(output.dependencies, extrapolateClassNames('model', m[1].split(','), output.definedName));
+        m = getClassDefValue(node, 'models', true) || getClassDefValue(node, 'model', true);
+        if (m) {
+            addClassNames(output.dependencies, extrapolateClassNames('model', m, output.definedName));
         }
 
         // Parse `views: [...]` annotation
-        m = EXT_VIEWS_RX.exec(nodeSrc);
-        if (m && m[1]) {
-            addClassNames(output.dependencies, extrapolateClassNames('view', m[1].split(','), output.definedName));
+        m = getClassDefValue(node, 'views', true);
+        if (m) {
+            addClassNames(output.dependencies, extrapolateClassNames('view', m, output.definedName));
         }
 
         // Parse `stores: [...]` annotation
-        m = EXT_STORES_RX.exec(nodeSrc);
-        if (m && m[1]) {
-            addClassNames(output.dependencies, extrapolateClassNames('store', m[1].split(','), output.definedName));
+        m = getClassDefValue(node, 'stores', true);
+        if (m) {
+            addClassNames(output.dependencies, extrapolateClassNames('store', m, output.definedName));
         }
 
         // Parse `mixins` annotation
-        m = MIXINS_RX.exec(nodeSrc);
-        if (m && m[2]) {
-            addClassNames(output.dependencies, m[2].split(',').map(function (s) {
-                return s.replace(MAPVALUE_RX, '');
-            }));
-        } else if (m && m[6]) {
-            addClassNames(output.dependencies, m[6].split(','));
+        p = getClassDefProperty(node, 'mixins');
+        if (p) {
+            if (p.value.type === 'ArrayExpression') {
+                addClassNames(output.dependencies, getPropertyValue(p));
+            } else if (p.value.type === 'ObjectExpression') {
+                addClassNames(output.dependencies, collectPropertyValues(p));
+            }
         }
     }
 
