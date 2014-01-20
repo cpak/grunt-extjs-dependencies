@@ -1,8 +1,9 @@
+app/ux/ReqA.js
+app/MyPlugin.js
 app/model/Base.js
 app/model/MyModel.js
 app/store/MyStore.js
 app/view/MyViewport.js
-app/ux/ReqA.js
 app/ux/ReqB.js
 app/mixin/MixinA.js
 app/mixin/MixinB.js

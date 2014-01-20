@@ -122,7 +122,7 @@ exports.init = function (grunt) {
     }
 
     function resolveName(name) {
-        if (~(name || '').indexOf(path.sep)) {
+        if (~(name || '').indexOf(path.sep) || DOT_JS_RX.test(name)) {
             return resolvePath(name);
         } else {
             return resolveClassName(name);

@@ -14,6 +14,8 @@ exports.init = function (grunt, opts, cb) {
         parser,
         graph = require('./graph').init(grunt),
 
+        DOT_JS_RX = /\.js$/,
+
         fileCounter = 0,
 
         exports = {},
@@ -106,8 +108,16 @@ exports.init = function (grunt, opts, cb) {
         return fileCounter;
     };
 
-    exports.resolveDependencies = function () {
-        var required = graph.getDependencies.apply(graph, arguments);
+    exports.resolveDependencies = function (from) {
+        var resolveFrom = (Array.isArray(from) ? from : [from]).map(function (name) {
+                if (~(name || '').indexOf(path.sep) || DOT_JS_RX.test(name)) {
+                    return getOutputPath(path.join(options.rootDir, name));
+                } else {
+                    return name;
+                }
+            }),
+            required = graph.getDependencies(resolveFrom);
+
         return {
             required: required,
             diff: array.difference(graph.getAllNodePaths(), required)

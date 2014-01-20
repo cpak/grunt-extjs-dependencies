@@ -36,7 +36,7 @@ module.exports = function(grunt) {
           rootDir: './test/data',
           src: [{ path: 'vendor/', parse: false }, 'app/'],
           excludeClasses: ['Ext.*', 'MyApp.mixin.Bar'],
-          resolveFrom: 'MyApp',
+          resolveFrom: ['app/MyPlugin.js', 'MyApp'],
           skipParse: [
             '**/app/ux/SkipMe.js'
           ],
