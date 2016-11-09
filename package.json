@@ -28,24 +28,26 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "concat-stream": "~1.0.1",
-    "falafel": "~0.3.1",
-    "minimatch": "~0.2.12",
-    "trim": "0.0.1",
-    "promise": "~3.2.0",
     "array-extended": "0.0.9",
-    "tmp": "0.0.21"
+    "concat-stream": "~1.5.2",
+    "falafel": "~2.0.0",
+    "minimatch": "~3.0.3",
+    "promise": "~7.1.1",
+    "tmp": "0.0.30",
+    "trim": "0.0.1"
   },
   "devDependencies": {
-    "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-clean": "~0.4.0",
-    "grunt-contrib-nodeunit": "~0.2.0",
-    "grunt": "~0.4.1"
+    "grunt": "~1.0.1",
+    "grunt-contrib-clean": "~1.0.0",
+    "grunt-contrib-jshint": "~1.0.0",
+    "grunt-contrib-nodeunit": "~1.0.0",
+    "grunt-contrib-uglify": "~2.0.0"
   },
   "peerDependencies": {
-    "grunt": "~0.4.1"
+    "grunt": "~1.0.1"
   },
   "keywords": [
-    "gruntplugin", "extjs"
+    "gruntplugin",
+    "extjs"
   ]
 }
