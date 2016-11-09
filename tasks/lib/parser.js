@@ -12,6 +12,7 @@ function ExtClass(params) {
 
 exports.init = function (grunt, opts) {
     var options,
+        _ = require('lodash'),
         array = require('array-extended'),
         falafel = require('falafel'),
         minimatcher = require('./minimatcher'),
@@ -56,8 +57,8 @@ exports.init = function (grunt, opts) {
                 grunt.verbose.ok('Done, defined class names: ' + classData.classNames.join(', '));
                 cls = new ExtClass({
                     names: classData.classNames,
-                    parentName: classData.parentName,
-                    dependencies: classData.dependencies,
+                    parentName: _.difference(classData.parentName, classData.classNames),
+                    dependencies: _.difference(classData.dependencies, classData.classNames),
                     src: classData.src,
                     path: filePath
                 });
