@@ -102,6 +102,8 @@ exports.init = function (grunt, opts) {
                         parseDefineCall(node, output);
                     } else if (isExtMethodCall('application', node)) {
                         parseApplicationCall(node, output);
+                    } else if(isExtMethodCall('require', node)) {
+                        parseRequireCall(node, output);
                     }
                     break;
 
@@ -150,6 +152,13 @@ exports.init = function (grunt, opts) {
         }
 
         parseClassDefBody(node, output);
+    }
+
+    function parseRequireCall(node, output) {
+        var clsNameRaw = node.expression.arguments[0].value;
+        if (typeof clsNameRaw === 'string' && clsNameRaw) {
+            addClassNames(output.dependencies, getClassName(clsNameRaw));
+        }
     }
 
     function collectPropertyValues(prop) {
