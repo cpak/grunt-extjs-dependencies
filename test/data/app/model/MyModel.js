@@ -15,4 +15,4 @@ Ext.define('MyApp.model.Require', {
 		Ext.require(fakeName);
 		Ext.require('MyApp.Ext.require');
 	}
-})
+});

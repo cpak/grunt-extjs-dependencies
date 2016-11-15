@@ -18,7 +18,7 @@ module.exports = function (grunt) {
             var numFiles, deps, required, diff;
 
             grunt.log.writeln('Adding ' + opts.src.length + ' directories to classpath...');
-            numFiles = mapper.addDir(opts.src);
+            numFiles = mapper.addDir(opts);
             grunt.log.ok('Done, found ' + numFiles + ' files.');
 
             grunt.log.writeln('Resolving dependencies...');

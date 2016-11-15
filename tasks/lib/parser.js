@@ -8,6 +8,7 @@ function ExtClass(params) {
     this.src = params.src;
     this.path = params.path;
     this._isClass = true;
+    this.isOverride = params.isOverride || false;
 }
 
 exports.init = function (grunt, opts) {
@@ -57,6 +58,7 @@ exports.init = function (grunt, opts) {
                 grunt.verbose.ok('Done, defined class names: ' + classData.classNames.join(', '));
                 cls = new ExtClass({
                     names: classData.classNames,
+                    isOverride: classData.isOverride,
                     parentName: _.difference(classData.parentName, classData.classNames),
                     dependencies: _.difference(classData.dependencies, classData.classNames),
                     src: classData.src,
@@ -66,6 +68,7 @@ exports.init = function (grunt, opts) {
                 grunt.verbose.ok('Done, no defined class name. Adding as ' + baseName);
                 cls = new ExtClass({
                     names: [baseName],
+                    isOverride: false,
                     parentName: classData.parentName,
                     dependencies: classData.dependencies,
                     src: classData.src,
@@ -92,7 +95,8 @@ exports.init = function (grunt, opts) {
                 classNames: [],
                 parentName: null,
                 dependencies: [],
-                src: src
+                src: src,
+                isOverride: false
             }, ast;
 
         ast = falafel(src, { comment: true }, function (node) {
@@ -131,7 +135,9 @@ exports.init = function (grunt, opts) {
         var m;
         // Get class name from Ext.define('MyApp.pkg.MyClass')
         output.definedName = getDefinedClassName(node);
-        output.classNames.push(output.definedName);
+        if (output.definedName) {
+            output.classNames.push(output.definedName);
+        }
 
         // Parse `alternateClassName`
         m = EXT_ALTERNATE_CLASS_NAME_RX.exec(node.source());
@@ -254,6 +260,16 @@ exports.init = function (grunt, opts) {
 
             // Remove `uses` from parsed file
             p.update('uses: []');
+        }
+
+        // The override case is a bit special because the name defined for an override will never be use
+        // eg : Ext.overrides.Component will never be used in the app, instead it is Ext.Component that will be used
+        // But this name is often (if not always) in the Ext.* namespace and is generally excluded by grunt-extjs-dependencies config,
+        // so we have to force its inclusion into the graph.
+        p = getClassDefProperty(node, 'override');
+        if (p) {
+            output.classNames.push(getPropertyValue(p));
+            output.isOverride = true;
         }
 
         // Parse `controllers: [...]` annotation
