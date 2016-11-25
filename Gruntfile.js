@@ -38,7 +38,7 @@ module.exports = function(grunt) {
           excludeClasses: ['Ext.*', 'MyApp.mixin.Bar'],
           resolveFrom: ['app/MyPlugin.js', 'MyApp'],
           skipParse: [
-            '**/app/ux/SkipMe.js'
+            '**/app/ux/SkipParse.js'
           ],
           // Needed for test
           tempDir: 'tmp',

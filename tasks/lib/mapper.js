@@ -20,6 +20,10 @@ exports.init = function (grunt, opts, cb) {
 
         exports = {},
 
+        firstFromFile,
+        firstFromNode,
+        allOverrideNode = [],
+
         initPromise;
 
     tmp.setGracefulCleanup();
@@ -57,7 +61,13 @@ exports.init = function (grunt, opts, cb) {
         if (parse) {
             data = grunt.file.read(filePath, { encoding: 'utf-8' });
             if (data && (node = parser.parse(data, outputPath))) {
+                if (node.isOverride) {
+                    allOverrideNode.push(node);
+                }
                 graph.addNode(node);
+                if (filePath === firstFromFile) {
+                    firstFromNode = node;
+                }
                 grunt.file.write(outputPath, node.src, { encoding: 'utf-8' });
             }
         } else {
@@ -84,7 +94,12 @@ exports.init = function (grunt, opts, cb) {
         return p;
     }
 
-    exports.addDir = function (dirs, parse) {
+    exports.addDir = function (opts, parse) {
+        var dirs = opts.src,
+            from = opts.resolveFrom;
+        firstFromFile = Array.isArray(from) ? from[0] : from;
+        firstFromFile = path.join(options.rootDir, firstFromFile);
+
         if (!Array.isArray(dirs)) {
             dirs = [{ path: dirs, parse: parse !== false }];
         }
@@ -105,6 +120,12 @@ exports.init = function (grunt, opts, cb) {
             readDir(dirPath, parse);
         });
 
+        // Add overrided file dependencies to the fromNode
+        allOverrideNode.forEach(function (node) {
+            if(firstFromNode) {
+                firstFromNode.dependencies = array.unique(firstFromNode.dependencies.concat(node.names));
+            }
+        });
         return fileCounter;
     };
 
