@@ -28,7 +28,7 @@ exports.extjs_dependencies = {
     test.expect(1);
 
     var actual = grunt.file.expand('tmp/**/*.js').length,
-        expected = 18;
+        expected = 21;
 
     test.equal(actual, expected, 'should have generated ' + expected + ' output files.');
 
@@ -36,7 +36,7 @@ exports.extjs_dependencies = {
   },
 
   dependency_order: function (test) {
-    test.expect(16);
+    test.expect(18);
 
     var actual = grunt.file.read('tmp/deps').split("\n"),
         expected = grunt.file.read('test/expected/deps').split("\n");
@@ -54,7 +54,7 @@ exports.extjs_dependencies = {
   },
 
   strip_requires_and_uses: function (test) {
-    test.expect(32);
+    test.expect(36);
 
     var files = grunt.file.read('test/expected/deps').split("\n").map(function (p) {
           return 'tmp/' + p;

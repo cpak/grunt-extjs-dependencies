@@ -1,6 +1,9 @@
 app/ux/ReqA.js
+app/model/AnotherRequire.js
+app/model/MyOverride.js
 app/MyPlugin.js
 app/model/Base.js
+app/model/ExtRequire.js
 app/model/MyModel.js
 app/store/MyStore.js
 app/view/MyViewport.js
@@ -11,6 +14,5 @@ app/controller/MyController.js
 app/ux/UseMe.js
 app/view/Main.js
 app/view/details/Details.js
-vendor/mylib/mylib.js
 app/mixin/MixinC.js
 app/MyApp.js
